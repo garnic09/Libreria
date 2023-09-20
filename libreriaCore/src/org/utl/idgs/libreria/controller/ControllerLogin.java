@@ -10,6 +10,7 @@ import org.utl.idgs.libreria.model.Persona;
 import org.utl.idgs.libreria.model.Usuario;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -60,5 +61,63 @@ public class ControllerLogin {
         e.setIdEmpleado(rs.getInt("IDE"));
 
         return e;
+    }
+    
+    public void guardarToken(Empleado empleado) throws SQLException{
+        String query = "UPDATE usuario SET lastToken=?,dateLastToken=NOW() WHERE idUsuario=?";
+        
+        ConexionMySQL conexion = new ConexionMySQL();
+        Connection conn = conexion.open();
+        
+        PreparedStatement pstmt = conn.prepareCall(query);
+        
+        pstmt.setString(1,empleado.getUsuario().getLastToken());
+        pstmt.setInt(2,empleado.getUsuario().getIdUsuario());
+        
+        pstmt.execute();
+        
+        pstmt.close();
+        conn.close();
+        conexion.close();
+    }
+    
+    public boolean eliminarToken(Empleado e) throws Exception{
+        boolean r = false;
+        String query = "UPDATE usuario SET lastToken='' WHERE idUsuario=?";
+        
+        ConexionMySQL conexionMySQL = new ConexionMySQL();
+        
+        Connection connection = conexionMySQL.open();
+        
+        PreparedStatement pstmt = connection.prepareCall(query);
+        
+        pstmt.setInt(1, e.getUsuario().getIdUsuario());
+        
+        pstmt.execute();
+        r = true;
+        
+        pstmt.close();
+        connection.close();
+        conexionMySQL.close();
+        
+        return r;
+    }
+    
+    public boolean validarToken(String t) throws Exception{
+        boolean r = false;
+        String query = "SELECT * FROM vista_e WHERE lastToken='" + t + "'";
+        ConexionMySQL conexionMySQL = new ConexionMySQL();
+        Connection connection = conexionMySQL.open();
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        
+        if(rs.next())
+            r = true;
+        
+        stmt.close();
+        connection.close();
+        conexionMySQL.close();
+        
+        return r;
     }
 }

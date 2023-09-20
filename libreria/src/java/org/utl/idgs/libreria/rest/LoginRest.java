@@ -42,4 +42,27 @@ public class LoginRest extends Application{
         String out = gson.toJson(e);
         return Response.status(Response.Status.OK).entity(out).build();
     }
+    
+    @Path("in")
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    public Response logIn(@FormParam("datosAcceso") @DefaultValue("") String datosAcceso){
+        Gson gson = new Gson();
+        Usuario usuario = new Usuario();
+        Empleado e = new Empleado();
+        usuario = gson.fromJson(datosAcceso, Usuario.class);
+        System.out.println(usuario.toString());
+        ControllerLogin objCA = new ControllerLogin();
+        try {
+            e = objCA.entrar(usuario);
+            e.getUsuario().setLastToken();
+            objCA.guardarToken(e);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(LoginRest.class.getName()).log(Level.SEVERE, null, ex);
+            
+        }
+        String out = gson.toJson(e);
+        return Response.status(Response.Status.OK).entity(out).build();
+    }
 }
